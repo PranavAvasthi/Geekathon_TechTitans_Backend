@@ -3,7 +3,6 @@ from app.routers import git
 from dotenv import load_dotenv # type: ignore
 import os
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI(title="Git Repository Analyzer")

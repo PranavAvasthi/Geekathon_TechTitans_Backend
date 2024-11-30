@@ -27,36 +27,37 @@ class GitService:
             repo = Repo.clone_from(repo_url, repo_path)
             
             author_commits = Counter()
-            all_authors = set()
+            author_details = {}
             
             for commit in repo.iter_commits():
-                author_info = {
-                    "name": commit.author.name,
-                    "email": commit.author.email
-                }
-                all_authors.add(str(author_info))
-                author_commits[commit.author.name] += 1
-            
-            top_authors = []
-            for author_name, commit_count in author_commits.most_common(10):
-                author_email = None
-                for author_str in all_authors:
-                    author_dict = eval(author_str)
-                    if author_dict["name"] == author_name:
-                        author_email = author_dict["email"]
-                        break
+                author_name = commit.author.name
+                author_email = commit.author.email
                 
-                top_authors.append({
+                author_commits[author_name] += 1
+                author_details[author_name] = {
                     "name": author_name,
-                    "email": author_email,
-                    "commit_count": commit_count
-                })
+                    "email": author_email
+                }
             
+            authors_data = [
+                {
+                    "name": author_name,
+                    "email": author_details[author_name]["email"],
+                    "commit_count": commit_count
+                }
+                for author_name, commit_count in sorted(
+                    author_commits.items(),
+                    key=lambda x: (-x[1], x[0].lower()) 
+                )
+            ]
+            
+            # Get all commits
             commits_data = []
-            for commit in list(repo.iter_commits())[:10]:
+            for commit in list(repo.iter_commits()):
                 commits_data.append({
                     "hash": commit.hexsha,
                     "author": commit.author.name,
+                    "author_email": commit.author.email,
                     "date": datetime.fromtimestamp(commit.committed_date).isoformat(),
                     "message": commit.message.strip(),
                     "lines_changed": commit.stats.total["lines"]
@@ -67,9 +68,9 @@ class GitService:
             stats = {
                 "repository_url": repo_url,
                 "total_commits": total_commits,
-                "total_authors": len(all_authors),
-                "top_authors": top_authors,
-                "latest_commits": commits_data
+                "total_authors": len(authors_data),
+                "authors": authors_data, 
+                "commits": commits_data
             }
             
             return stats

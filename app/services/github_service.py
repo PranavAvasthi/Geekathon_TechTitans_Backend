@@ -6,7 +6,7 @@ import os
 class GithubService:
     def __init__(self):
         self.github_token = os.getenv('GITHUB_TOKEN')
-        print(f"Token found: {'yes' if self.github_token else 'no'}")  # Debug print
+        print(f"Token found: {'yes' if self.github_token else 'no'}")  
         if not self.github_token:
             raise Exception("GITHUB_TOKEN environment variable is not set")
         self.github = Github(self.github_token)
@@ -103,9 +103,8 @@ class GithubService:
                         }
                     })
             except GithubException as e:
-                commits_data = []  # No commits found or error
+                commits_data = [] 
             
-            # Get user's pull requests
             prs_data = []
             for pr in repo.get_pulls(state='all'):
                 if pr.user.login.lower() == username.lower():
@@ -125,7 +124,6 @@ class GithubService:
                         }
                     })
             
-            # Prepare user statistics
             stats = {
                 "repository": f"{owner}/{repo_name}",
                 "username": username,
